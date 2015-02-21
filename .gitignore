@@ -9,3 +9,9 @@
 
 # RStudio files
 .Rproj.user/
+
+# Mac OS X Files
+.DS_Store
+
+# VIM swap files
+*.swp
