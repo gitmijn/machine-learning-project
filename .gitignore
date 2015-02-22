@@ -22,3 +22,6 @@ data/
 # Ignore knitr cache
 ml_project_files/
 ml_project_cache/
+
+# Ignore answer files
+.txt

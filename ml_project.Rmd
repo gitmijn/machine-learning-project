@@ -50,7 +50,7 @@ training_dev <- trainData[ inTrain,]
 testing_dev <- trainData[-inTrain,]
 ```
 
-#### Modeling, prediction and cross-validationmo
+#### Modeling, prediction and cross-validation
 Given the accuracy of random forests, we will use it first for the model.
 ```{r, echo=FALSE}
 model <- randomForest(classe~., training_dev, method = "class")
@@ -66,3 +66,19 @@ The model created by using the randomForest algorithm is very accurate within
 the testing (predictor) dataset at 99.5%. Therefore the **in sample error rate
 is < 0.5%** and this predicts **out of sample error to be near 0.5%**.
 
+#### Prediction Assignment Submission
+```{r}
+prediction_submit <- predict(model, testData)
+prediction_submit
+```
+Write the files
+```{r}
+pml_write_files = function(x){
+  n = length(x)
+  for(i in 1:n){
+    filename = paste0("problem_id_",i,".txt")
+    write.table(x[i],file=filename,quote=FALSE,row.names=FALSE,col.names=FALSE)
+  }
+}
+pml_write_files(prediction_submit)
+```
