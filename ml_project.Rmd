@@ -5,15 +5,14 @@ date: "February 22, 2015"
 output: html_document
 ---
 ###### Load required libraries
-```{r}
+```{r, message=FALSE}
 library(caret)
-library(ggplot2)
 library(randomForest)
 ```
 
 
 
-#### Download the datasets
+#### Get the data
 
 ```{r, cache=TRUE}
 fileUrl_training <- "https://d396qusza40orc.cloudfront.net/predmachlearn/pml-training.csv"
@@ -22,9 +21,48 @@ download.file(fileUrl_training,destfile="./data/pml-training.csv",method="curl")
 download.file(fileUrl_testing, destfile="./data/pml-testing.csv", method="curl")
 ```
 
+#### Clean the data
 
-
-
-```{r, echo=FALSE}
-plot(cars)
+Import the data but replace NA strings, divide by zero errors and blanks with 
+true NAs.
+```{r}
+trainData <- read.csv("./data/pml-training.csv", na.strings=c("NA","#DIV/0!", "", " "))
+testData <- read.csv("./data/pml-testing.csv", na.strings=c("NA","#DIV/0!", "", " "))
 ```
+
+Drop the columns that are more than 97% NAs. Also, drop the first seven columns 
+that are the username and time windowing functions added as they do not add to the
+model.
+```{r}
+trainData <- trainData[,colSums(is.na(trainData))<nrow(trainData)*.97]
+trainData <- trainData[,-c(1:7)]
+```
+
+
+
+#### Split the data
+Here we subset the training data, since there are many observations, so that 
+we can cross-validate the chosen model.
+```{r}
+set.seed(222)
+inTrain <- createDataPartition(trainData$classe, p = 3/4)[[1]]
+training_dev <- trainData[ inTrain,]
+testing_dev <- trainData[-inTrain,]
+```
+
+#### Modeling, prediction and cross-validationmo
+Given the accuracy of random forests, we will use it first for the model.
+```{r, echo=FALSE}
+model <- randomForest(classe~., training_dev, method = "class")
+prediction <- predict(model, testing_dev, type = "class")
+```
+
+Use the confusion matrix to gauge the performance of the model with randomForest
+```{r}
+confusionMatrix(prediction, testing_dev$classe)
+```
+
+The model created by using the randomForest algorithm is very accurate within
+the testing (predictor) dataset at 99.5%. Therefore the **in sample error rate
+is < 0.5%** and this predicts **out of sample error to be near 0.5%**.
+
